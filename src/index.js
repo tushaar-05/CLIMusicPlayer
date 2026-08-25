@@ -1,4 +1,11 @@
 const { getSongs } = require("./songManager");
+const { startKeyboardInput } = require("./input");
+const { renderSongs } = require("./ui");
+const {
+    getSelectedIndex,
+    moveUp,
+    moveDown
+} = require("./state");
 
 const songs = getSongs();
 
@@ -7,8 +14,27 @@ if (songs.length === 0) {
     process.exit(0);
 }
 
-console.log("Songs:");
+function render() {
+    renderSongs(songs, getSelectedIndex());
+}
 
-songs.forEach((song, index) => {
-    console.log(`${index + 1}. ${song.name}`);
-});
+function handleKey(key) {
+    if (key === "UP") {
+        moveUp();
+        render();
+    }
+
+    if (key === "DOWN") {
+        moveDown(songs);
+        render();
+    }
+
+    if (key === "ENTER") {
+        const index = getSelectedIndex();
+        console.log(`\nSelected: ${songs[index].name}`);
+    }
+}
+
+render();
+
+startKeyboardInput(handleKey);
