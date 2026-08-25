@@ -1,11 +1,15 @@
 const { getSongs } = require("./songManager");
 const { startKeyboardInput } = require("./input");
-const { renderSongs } = require("./ui");
 const {
     getSelectedIndex,
     moveUp,
-    moveDown
+    moveDown,
+    setPlayback,
+    updatePlayback,
+    getPlaybackState
 } = require("./state");
+const { renderSongs } = require("./ui");
+const player = require("./player");
 
 const songs = getSongs();
 
@@ -15,7 +19,67 @@ if (songs.length === 0) {
 }
 
 function render() {
-    renderSongs(songs, getSelectedIndex());
+    renderSongs(
+        songs,
+        getSelectedIndex(),
+        getPlaybackState()
+    );
+}
+
+async function playSelectedSong() {
+    const song = songs[getSelectedIndex()];
+
+    setPlayback(song, "loading", 0, 0);
+    render();
+
+    try {
+        const result = await player.play(song, {
+            onUpdate: (currentTime, duration) => {
+                updatePlayback(currentTime, duration);
+                render();
+            },
+
+            onEnd: () => {
+                setPlayback(song, "stopped", 0, result.duration);
+                render();
+            }
+        });
+
+        setPlayback(song, "playing", 0, result.duration);
+        render();
+    } catch (error) {
+        setPlayback(song, "stopped", 0, 0);
+        render();
+        console.error("\nUnable to play song:", error.message);
+    }
+}
+
+function togglePauseResume() {
+    const playback = getPlaybackState();
+
+    if (playback.playbackState === "playing") {
+        player.pause();
+
+        setPlayback(
+            playback.currentSong,
+            "paused",
+            playback.currentTime,
+            playback.duration
+        );
+
+        render();
+    } else if (playback.playbackState === "paused") {
+        player.resume();
+
+        setPlayback(
+            playback.currentSong,
+            "playing",
+            playback.currentTime,
+            playback.duration
+        );
+
+        render();
+    }
 }
 
 function handleKey(key) {
@@ -30,8 +94,11 @@ function handleKey(key) {
     }
 
     if (key === "ENTER") {
-        const index = getSelectedIndex();
-        console.log(`\nSelected: ${songs[index].name}`);
+        playSelectedSong();
+    }
+
+    if (key === "SPACE") {
+        togglePauseResume();
     }
 }
 

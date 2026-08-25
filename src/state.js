@@ -1,5 +1,10 @@
 let selectedIndex = 0;
 
+let currentSong = null;
+let playbackState = "stopped";
+let currentTime = 0;
+let duration = 0;
+
 function getSelectedIndex() {
     return selectedIndex;
 }
@@ -16,8 +21,32 @@ function moveDown(songs) {
     }
 }
 
+function setPlayback(song, state, time, songDuration) {
+    currentSong = song;
+    playbackState = state;
+    currentTime = time;
+    duration = songDuration;
+}
+
+function updatePlayback(time, songDuration) {
+    currentTime = time;
+    duration = songDuration;
+}
+
+function getPlaybackState() {
+    return {
+        currentSong,
+        playbackState,
+        currentTime,
+        duration
+    };
+}
+
 module.exports = {
     getSelectedIndex,
     moveUp,
-    moveDown
+    moveDown,
+    setPlayback,
+    updatePlayback,
+    getPlaybackState
 };

@@ -18,6 +18,10 @@ function startKeyboardInput(onKeyPress) {
             onKeyPress("ENTER");
         }
 
+        if (key.name === "space") {
+            onKeyPress("SPACE");
+        }
+
         if (key.name === "q") {
             process.stdin.setRawMode(false);
             process.stdin.pause();
